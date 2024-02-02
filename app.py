@@ -4,14 +4,20 @@ from datetime import datetime
 import templates.database
 
 app = Flask(__name__)
+host = 'localhost'
+port = '5432'
+user = 'postgres'
+password = '123'
+name = 'test'
+url = f'postgresql://{user}:{password}@{host}:{port}/{name}'
+db = templates.database.Database(url)
+
 
 class FlaskPoweredServer:
     def __init__(self):
-        self.db: templates.database.Database|None = None
-        self.app = app
-        self.app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:SQL_gfccdjhl1@localhost:5432/test'
+        self.db: templates.database.Database | None = None
 
-        @self.app.route('/')
+        @app.route('/')
         def starting_page():
             current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             return render_template('index.html', current_time=current_time)
@@ -20,13 +26,14 @@ class FlaskPoweredServer:
         def authorization():
 
             if request.method == 'POST':
-                Login = request.form.get('Login')
-                Password = request.form.get('Password')
-                print(Login, Password)
-                self.db.insert_time(Password)
-                self.db.selection_query()
+                login = request.form.get('Login')
+                password = request.form.get('Password')
+                ###ЖЕСТКАЯ ПРИКРУТКА БД
+                print(login, password)
+                self.db.add_user_inputs(templates.database.UserInputs(id=1, login=login, password=password))
+                ###ЖЕСТКО РАБОТАЕТ
 
-                if Login == "admin" and Password == "admin":
+                if login == "admin" and password == "admin":
                     return "Correct"
                 else:
                     return "Incorrect"
@@ -38,10 +45,8 @@ class FlaskPoweredServer:
                          <input type="submit" value="Enter">
                      </form>'''
 
-
     def run(self, debug_mode=True):
-        self.app.run(debug=debug_mode)
+        app.run(debug=debug_mode)
 
     def set_db(self, db):
         self.db = db
-

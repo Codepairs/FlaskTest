@@ -1,59 +1,53 @@
 import sqlalchemy
+from sqlalchemy import create_engine, Column, Integer, String, Date
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
 
-#%load_ext sql
-from sqlalchemy import create_engine
+Base = declarative_base()
+
+class User(Base):
+    __tablename__ = 'users'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(100), nullable=False)
+    email = Column(String(100), nullable=False, unique=True)
+    birth_date = Column(Date, nullable=False)
+
+class UserInputs(Base):
+    __tablename__ = 'user_inputs'
+    id = Column(Integer, primary_key=True)
+    login = Column(String(100), nullable=False)
+    password = Column(String(100), nullable=False)
+
 
 class Database:
-    def __init__(self):
-        self._engine = create_engine('postgresql://postgres:SQL_gfccdjhl1@localhost:5432/test')
-        self._connection = self._engine.connect()
-        self._connection.execute(sqlalchemy.text(
-            '''
-            DROP TABLE IF EXISTS time_db;
+    def __init__(self, url):
+        self.engine = create_engine(url)
+        Base.metadata.create_all(bind=self.engine)
 
-            CREATE TABLE time_db (
-                    id SERIAL PRIMARY KEY,
-                    time VARCHAR(30) NOT NULL
-                    );
-            '''
-        ))
+    def add_user_inputs(self, user_inputs):
+        session = sessionmaker(bind=self.engine)()
+        session.add(user_inputs)
+        session.commit()
+        session.close()
 
+    def add_user(self, user):
+        session = sessionmaker(bind=self.engine)()
+        session.add(user)
+        session.commit()
+        session.close()
 
-    def create_table(self):
-        self._engine = create_engine('postgresql://postgres:SQL_gfccdjhl1@localhost:5432/test')
-        self._connection = self._engine.connect()
-        self._connection.execute(sqlalchemy.text(
-            '''
-            DROP TABLE IF EXISTS time_db;
+    def get_user(self, user_id):
+        session = sessionmaker(bind=self.engine)()
+        user = session.query(User).filter(User.id == user_id).first()
+        session.close()
+        return user
 
-            CREATE TABLE time_db (
-                    id SERIAL PRIMARY KEY,
-                    time VARCHAR(30) NOT NULL
-                    );
-            '''
-        ))
+    def delete_user(self, user_id):
+        session = sessionmaker(bind=self.engine)()
+        user = session.query(User).filter(User.id == user_id).first()
+        if user:
+            session.delete(user)
+            session.commit()
+        session.close()
 
-    def check_connection(self):
-        print(self._connection)
-
-    def selection_query(self, query = "SELECT * FROM time_db;"):
-        result = self._connection.execute(sqlalchemy.text(query)).fetchall()
-        print(result)
-
-    def insert_time(self, time: str):
-        self._connection.execute(sqlalchemy.text(
-            '''
-            INSERT INTO time_db (time)
-            VALUES ('{0}');
-            '''.format(time)
-        ))
-        print(self._connection)
-
-if __name__=="__main__":
-    db = Database()
-    db.check_connection()
-    db.insert_time("21:47:15")
-    db.selection_query()
-
-#my_query = ''
-#results = connection.execute(text("SELECT * FROM users")).fetchall()
