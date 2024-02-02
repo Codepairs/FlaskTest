@@ -5,7 +5,18 @@ from sqlalchemy import create_engine
 
 class Database:
     def __init__(self):
-        print("я не нужен(")
+        self._engine = create_engine('postgresql://postgres:SQL_gfccdjhl1@localhost:5432/test')
+        self._connection = self._engine.connect()
+        self._connection.execute(sqlalchemy.text(
+            '''
+            DROP TABLE IF EXISTS time_db;
+
+            CREATE TABLE time_db (
+                    id SERIAL PRIMARY KEY,
+                    time VARCHAR(30) NOT NULL
+                    );
+            '''
+        ))
 
 
     def create_table(self):

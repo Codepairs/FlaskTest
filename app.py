@@ -9,7 +9,7 @@ class FlaskPoweredServer:
     def __init__(self):
         self.db: templates.database.Database|None = None
         self.app = app
-        self.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db/base.db'
+        self.app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:SQL_gfccdjhl1@localhost:5432/test'
 
         @self.app.route('/')
         def starting_page():
@@ -23,8 +23,8 @@ class FlaskPoweredServer:
                 Login = request.form.get('Login')
                 Password = request.form.get('Password')
                 print(Login, Password)
-                #self.db.insert_time(Password)
-
+                self.db.insert_time(Password)
+                self.db.selection_query()
 
                 if Login == "admin" and Password == "admin":
                     return "Correct"
